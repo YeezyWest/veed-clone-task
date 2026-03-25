@@ -3,7 +3,7 @@
 import React from 'react';
 import { Rnd } from 'react-rnd';
 import { useEditorStore } from '@/store/useEditorStore';
-import { Play, Pause, SkipBack, SkipForward, Trash2 } from 'lucide-react';
+import { Play, Pause, SkipBack, SkipForward, Trash2, Monitor, ChevronDown } from 'lucide-react';
 
 export const Canvas = () => {
   const { items, updateItem, removeItem, selectedId, setSelectedId, currentTime, isPlaying } = useEditorStore();
@@ -13,10 +13,10 @@ export const Canvas = () => {
   );
 
   return (
-    <div className="relative flex flex-1 flex-col overflow-hidden bg-zinc-900/50">
+    <div className="relative flex flex-1 flex-col overflow-hidden bg-[#f8f8f8]">
       {/* Canvas Area */}
-      <div className="relative flex flex-1 items-center justify-center p-8">
-        <div className="relative aspect-video w-full max-w-[800px] bg-black shadow-2xl shadow-blue-500/5 ring-1 ring-white/5 overflow-hidden">
+      <div className="relative flex flex-1 flex-col items-center justify-center p-6 min-h-0 overflow-y-auto custom-scrollbar">
+        <div className="relative aspect-video w-full max-w-[650px] shrink-0 bg-black shadow-md ring-1 ring-gray-200" onClick={() => setSelectedId(null)}>
           {activeItems.map((item) => (
             <Rnd
               key={item.id}
@@ -53,18 +53,18 @@ export const Canvas = () => {
                     alt={item.name}
                   />
                 ) : (
-                  <div className="flex h-full w-full items-center justify-center bg-zinc-800 text-white font-bold px-2 text-center">
+                  <div className="flex h-full w-full items-center justify-center bg-gray-800 text-white font-bold px-2 text-center">
                     {item.content || item.name}
                   </div>
                 )}
               </div>
 
-              {/* Delete button — visible when selected */}
+              {/* Delete button — TOP-RIGHT inside bounds, always visible when selected */}
               {selectedId === item.id && (
                 <button
                   onMouseDown={(e) => { e.stopPropagation(); }}
                   onClick={(e) => { e.stopPropagation(); removeItem(item.id); setSelectedId(null); }}
-                  className="pointer-events-auto absolute -top-3 -right-3 flex h-6 w-6 items-center justify-center rounded-full bg-red-500 text-white shadow-lg shadow-red-500/40 transition-transform hover:scale-110 z-50"
+                  className="pointer-events-auto absolute top-1 right-1 flex h-6 w-6 items-center justify-center rounded-full bg-red-500 text-white shadow-sm transition-transform hover:scale-110 z-50"
                   title="Delete item (or press Delete key)"
                 >
                   <Trash2 className="h-3 w-3" />
@@ -74,33 +74,28 @@ export const Canvas = () => {
           ))}
           
           {items.length === 0 && (
-            <div className="absolute inset-0 flex flex-col items-center justify-center text-zinc-600">
-              <div className="h-20 w-32 border-2 border-dashed border-zinc-800 rounded-lg mb-4 flex items-center justify-center">
-                <Play className="h-8 w-8 opacity-20" />
+            <div className="absolute inset-0 flex flex-col items-center justify-center text-gray-500">
+              <div className="h-16 w-24 border-2 border-dashed border-gray-600 rounded-lg mb-3 flex items-center justify-center">
+                <Play className="h-6 w-6 opacity-40" />
               </div>
-              <p className="text-sm font-medium">Upload media to get started</p>
+              <p className="text-xs font-medium">Upload media to get started</p>
             </div>
           )}
         </div>
-      </div>
-
-      {/* Quick Playback Controls (Optional Overlay) */}
-      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-4 rounded-full glass px-6 py-2.5 shadow-xl">
-        <button className="text-zinc-400 transition-colors hover:text-blue-500">
-          <SkipBack className="h-5 w-5 fill-current" />
-        </button>
-        <button className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-600 text-white shadow-lg shadow-blue-600/30 transition-transform active:scale-95">
-          <Play className="h-5 w-5 fill-current" />
-        </button>
-        <button className="text-zinc-400 transition-colors hover:text-blue-500">
-          <SkipForward className="h-5 w-5 fill-current" />
-        </button>
-      </div>
-
-      {/* Resolution/Background indicators */}
-      <div className="absolute top-4 right-4 flex items-center gap-2 rounded-full glass px-3 py-1 text-[10px] font-medium text-zinc-400">
-        <div className="h-2 w-2 rounded-full bg-green-500" />
-        1080p | 60fps
+        
+        {/* Under Canvas Controls Pill */}
+        <div className="mt-4 flex shrink-0 items-center gap-4 rounded-full border border-gray-200 bg-white px-4 py-2 shadow-sm">
+          <button className="flex items-center gap-2 text-xs font-medium text-gray-700 hover:text-gray-900">
+            <Monitor className="h-4 w-4" />
+            Original (16:9)
+            <ChevronDown className="h-3 w-3 text-gray-400" />
+          </button>
+          <div className="h-4 w-px bg-gray-200" />
+          <button className="flex items-center gap-2 text-xs font-medium text-gray-700 hover:text-gray-900">
+            <div className="h-4 w-4 rounded-full bg-black border border-gray-200" />
+            Background
+          </button>
+        </div>
       </div>
     </div>
   );

@@ -1,39 +1,40 @@
 'use client';
 
 import React from 'react';
-import { Download, Share2, Play, Settings } from 'lucide-react';
-import { useEditorStore } from '@/store/useEditorStore';
-
+import { Download, Share2 } from 'lucide-react';
 import { ExportModal } from './ExportModal';
 
 export const Navbar = () => {
-  const { isPlaying, setPlaying } = useEditorStore();
   const [isExportOpen, setIsExportOpen] = React.useState(false);
 
   return (
-    <nav className="flex h-16 items-center justify-between border-b border-white/10 bg-zinc-950 px-6">
-      <div className="flex items-center gap-4">
-        <div className="flex bg-blue-600/10 p-2 rounded-lg border border-blue-500/20">
-          <Play className="h-4 w-4 text-blue-500 fill-current" />
+    <>
+      <nav className="flex h-12 items-center justify-between border-b border-[#e5e5e5] bg-white px-4">
+        {/* Left: Logo + Project Name */}
+        <div className="flex items-center gap-3">
+          <div className="flex h-7 w-7 items-center justify-center rounded-md bg-gradient-to-br from-violet-600 to-blue-500 shadow-sm">
+            <span className="text-xs font-black text-white">V</span>
+          </div>
+          <span className="text-sm font-medium text-gray-700">Untitled Project</span>
         </div>
-        <h1 className="text-sm font-bold tracking-tight text-white">MINI EDITOR <span className="text-[10px] font-medium text-zinc-500 align-top ml-1">BETA</span></h1>
-      </div>
 
-      <div className="flex items-center gap-3">
-        <button className="flex h-9 items-center gap-2 rounded-md bg-zinc-900 px-4 text-xs font-medium text-zinc-300 transition-colors hover:bg-zinc-800 border border-white/5">
-          <Share2 className="h-4 w-4" />
-          Share
-        </button>
-        <button 
-          onClick={() => setIsExportOpen(true)}
-          className="flex h-9 items-center gap-2 rounded-md bg-blue-600 px-4 text-xs font-bold text-white transition-all hover:bg-blue-500 shadow-lg shadow-blue-600/20 active:scale-95"
-        >
-          <Download className="h-4 w-4" />
-          Export
-        </button>
-      </div>
-
+        {/* Right: Share + Credits + Export */}
+        <div className="flex items-center gap-2">
+          <button className="flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium text-gray-600 transition-colors hover:bg-gray-100">
+            <Share2 className="h-3.5 w-3.5" />
+            Share
+          </button>
+          <div className="h-5 w-px bg-gray-200" />
+          <button
+            onClick={() => setIsExportOpen(true)}
+            className="flex items-center gap-1.5 rounded-md bg-[#6d28d9] px-4 py-1.5 text-xs font-bold text-white transition-colors hover:bg-[#5b21b6] shadow-sm"
+          >
+            <Download className="h-3.5 w-3.5" />
+            Export
+          </button>
+        </div>
+      </nav>
       <ExportModal isOpen={isExportOpen} onClose={() => setIsExportOpen(false)} />
-    </nav>
+    </>
   );
 };

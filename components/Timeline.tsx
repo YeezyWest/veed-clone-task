@@ -2,7 +2,7 @@
 
 import React, { useRef, useEffect } from 'react';
 import { useEditorStore } from '@/store/useEditorStore';
-import { Play, Pause, SkipBack, SkipForward, Clock, Scissors, SquareArrowOutUpRight, Film, ImageIcon, Trash2 } from 'lucide-react';
+import { Play, Pause, SkipBack, SkipForward, Scissors, Film, ImageIcon, Trash2, ZoomIn, ZoomOut, Volume2, Maximize } from 'lucide-react';
 
 import { Rnd } from 'react-rnd';
 
@@ -14,7 +14,6 @@ export const Timeline = () => {
   const totalWidth = duration * pixelsPerSecond;
 
   const handleTimelineClick = (e: React.MouseEvent) => {
-    // Only seek if clicking the timeline track, not an item
     if ((e.target as HTMLElement).classList.contains('timeline-track-inner')) {
       const rect = e.currentTarget.getBoundingClientRect();
       const x = e.clientX - rect.left + (scrollRef.current?.scrollLeft || 0);
@@ -35,56 +34,67 @@ export const Timeline = () => {
     return () => clearInterval(interval);
   }, [isPlaying, currentTime, duration, setCurrentTime, setPlaying]);
 
+  const formatTime = (time: number) => {
+    const d = new Date(time * 1000);
+    const m = d.getUTCMinutes().toString().padStart(2, '0');
+    const s = d.getUTCSeconds().toString().padStart(2, '0');
+    const ms = Math.floor(d.getUTCMilliseconds() / 10).toString().padStart(2, '0');
+    return `${m}:${s}.${ms}`;
+  };
+
   return (
-    <div className="flex h-64 flex-col border-t border-white/10 bg-zinc-950">
-      {/* Timeline Header/Controls */}
-      <div className="flex h-12 items-center justify-between border-b border-white/5 px-6">
-        <div className="flex items-center gap-6">
-          <div className="flex items-center gap-1.5 text-zinc-400">
-            <Clock className="h-4 w-4" />
-            <span className="text-xs font-mono font-bold text-blue-500">
-              {new Date(currentTime * 1000).toISOString().substr(11, 8)}
-            </span>
-            <span className="text-[10px] text-zinc-600">/ {new Date(duration * 1000).toISOString().substr(11, 8)}</span>
-          </div>
-          <div className="h-4 w-px bg-white/10" />
-          <div className="flex items-center gap-2">
-            <button className="rounded-md p-1.5 text-zinc-400 transition-colors hover:bg-zinc-800 hover:text-white">
-              <Scissors className="h-4 w-4" />
-            </button>
-            <button className="rounded-md p-1.5 text-zinc-400 transition-colors hover:bg-zinc-800 hover:text-white">
-              <SquareArrowOutUpRight className="h-4 w-4" />
-            </button>
-          </div>
+    <div className="flex h-64 flex-col border-t border-[#e5e5e5] bg-white">
+      {/* VEED Toolbar */}
+      <div className="flex h-14 shrink-0 items-center justify-between border-b border-[#e5e5e5] px-6">
+        {/* Left: Split tool */}
+        <div className="flex w-[200px] items-center gap-4">
+          <button className="flex items-center gap-1.5 text-xs font-semibold text-gray-600 transition-colors hover:text-gray-900">
+            <Scissors className="h-4 w-4" />
+            Split
+          </button>
         </div>
 
-        <div className="flex items-center gap-4">
+        {/* Center: Playback Controls */}
+        <div className="flex flex-1 items-center justify-center gap-6">
           <button 
             onClick={() => setCurrentTime(0)}
-            className="text-zinc-500 transition-colors hover:text-white"
+            className="text-gray-400 transition-colors hover:text-gray-800"
           >
-            <SkipBack className="h-4 w-4" />
+            <SkipBack className="h-4 w-4 fill-current" />
           </button>
           <button 
              onClick={() => setPlaying(!isPlaying)}
-             className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-black shadow-xl shadow-white/10 transition-transform active:scale-90"
+             className="flex h-9 w-9 items-center justify-center rounded-full bg-black text-white shadow-md transition-transform hover:scale-105 active:scale-95"
           >
-            {isPlaying ? <Pause className="h-5 w-5 fill-current" /> : <Play className="h-5 w-5 fill-current ml-1" />}
+            {isPlaying ? <Pause className="h-4 w-4 fill-current" /> : <Play className="h-4 w-4 fill-current ml-0.5" />}
           </button>
-          <button className="text-zinc-500 transition-colors hover:text-white">
-            <SkipForward className="h-4 w-4" />
+          <button className="text-gray-400 transition-colors hover:text-gray-800">
+            <SkipForward className="h-4 w-4 fill-current" />
           </button>
+          
+          <div className="ml-2 text-xs font-medium text-gray-500 font-mono tracking-tight">
+            <span className="text-black">{formatTime(currentTime)}</span> / {formatTime(duration)}
+          </div>
         </div>
 
-        <div className="flex items-center gap-4">
-            <button className="text-[10px] font-bold text-zinc-500 hover:text-white transition-colors">1.0x</button>
+        {/* Right: Zoom & View Tools */}
+        <div className="flex w-[200px] items-center justify-end gap-4 text-gray-400">
+          <div className="flex items-center gap-2">
+            <button className="hover:text-gray-800"><ZoomOut className="h-4 w-4" /></button>
+            <div className="h-1 w-16 rounded-full bg-gray-200">
+              <div className="h-full w-1/2 rounded-full bg-black"></div>
+            </div>
+            <button className="hover:text-gray-800"><ZoomIn className="h-4 w-4" /></button>
+          </div>
+          <button className="hover:text-gray-800"><Volume2 className="h-4 w-4" /></button>
+          <button className="hover:text-gray-800"><Maximize className="h-4 w-4" /></button>
         </div>
       </div>
 
       {/* Timeline Tracks Area */}
       <div 
         ref={scrollRef}
-        className="relative flex-1 overflow-x-auto overflow-y-auto timeline-track pt-10"
+        className="relative flex-1 overflow-x-auto overflow-y-auto timeline-track pt-8 bg-[#f8f8f8]"
         onClick={handleTimelineClick}
       >
         <div 
@@ -92,11 +102,11 @@ export const Timeline = () => {
           style={{ width: totalWidth }}
         >
           {/* Time Markers */}
-          <div className="absolute top-0 flex h-8 w-full border-b border-white/5 bg-zinc-950/80 backdrop-blur-sm pointer-events-none z-10">
+          <div className="absolute top-0 flex h-6 w-full border-b border-[#e5e5e5] bg-white pointer-events-none z-10">
             {Array.from({ length: Math.ceil(duration) + 1 }).map((_, i) => (
               <div 
                 key={i} 
-                className={`relative flex-shrink-0 border-l border-white/10 ${i % 5 === 0 ? 'h-full' : 'h-2 top-auto bottom-0'} pl-1 text-[9px] text-zinc-600`}
+                className={`relative flex-shrink-0 border-l border-[#e5e5e5] ${i % 5 === 0 ? 'h-full' : 'h-2 top-auto bottom-0'} pl-1 text-[10px] font-medium text-gray-400`}
                 style={{ width: pixelsPerSecond }}
               >
                 {i % 5 === 0 ? `${i}s` : ''}
@@ -105,12 +115,22 @@ export const Timeline = () => {
           </div>
 
           {/* Tracks */}
-          <div className="flex h-full flex-col gap-2 p-2">
+          <div className="flex flex-col gap-2 p-4 min-h-[120px]">
+            {/* Background Add Media track placeholder */}
+            <div className="relative h-[44px] w-full bg-transparent">
+              <div 
+                className="absolute left-0 top-0 h-full w-[280px] rounded-md border border-[#e5e5e5] bg-white flex items-center justify-center text-[11px] font-semibold text-gray-400 hover:border-gray-300 hover:text-gray-500 transition-all cursor-pointer shadow-sm"
+                onClick={() => document.querySelector<HTMLInputElement>('input[type="file"]')?.click()}
+              >
+                + Add Media
+              </div>
+            </div>
+
             {items.map((item, index) => (
-              <div key={`track-${item.id}`} className="relative h-12 w-full bg-white/[0.02] rounded-lg border border-white/[0.02]">
+              <div key={`track-${item.id}`} className="relative h-[44px] w-full bg-transparent">
                 <Rnd
                   size={{ width: item.duration * pixelsPerSecond, height: 44 }}
-                  position={{ x: item.startTime * pixelsPerSecond, y: 2 }}
+                  position={{ x: item.startTime * pixelsPerSecond, y: 0 }}
                   onDragStop={(e, d) => {
                     updateItem(item.id, { startTime: Math.max(0, d.x / pixelsPerSecond) });
                   }}
@@ -127,18 +147,19 @@ export const Timeline = () => {
                     e.stopPropagation();
                     setSelectedId(item.id);
                   }}
-                  className={`group rounded-md border text-[10px] shadow-lg overflow-hidden transition-colors ${
+                  className={`group rounded-md text-[10px] shadow-sm overflow-hidden transition-all ${
                     selectedId === item.id 
-                        ? 'border-blue-500 bg-blue-500/20 ring-1 ring-blue-500/50' 
-                        : 'border-white/10 bg-zinc-900 hover:border-white/20'
+                        ? 'ring-2 ring-blue-500 z-10' 
+                        : 'border border-[#2d2d2d] hover:border-blue-500 z-0'
                   }`}
+                  style={{ backgroundColor: '#1e1e1e' }}
                 >
                   <div className="flex h-full w-full flex-col justify-center px-3 pr-8">
                     <div className="flex items-center gap-2">
-                      {item.type === 'video' ? <Film className="h-3 w-3 text-blue-400" /> : <ImageIcon className="h-3 w-3 text-purple-400" />}
-                      <span className="truncate font-semibold text-zinc-200">{item.name}</span>
+                       {item.type === 'video' ? <Film className="h-3.5 w-3.5 text-blue-400" /> : <ImageIcon className="h-3.5 w-3.5 text-purple-400" />}
+                       <span className="truncate font-medium text-white text-[11px]">{item.name}</span>
                     </div>
-                    <span className="mt-0.5 text-[8px] text-zinc-500">{(item.duration).toFixed(1)}s</span>
+                    <span className="mt-0.5 text-[9px] text-gray-400">{(item.duration).toFixed(1)}s</span>
                   </div>
 
                   {/* Delete button — shown on selected clip */}
@@ -154,20 +175,19 @@ export const Timeline = () => {
                   )}
 
                   {/* Handle indicators */}
-                  <div className="absolute inset-y-0 left-0 w-1 bg-white/10 group-hover:bg-blue-500/30" />
-                  <div className="absolute inset-y-0 right-0 w-1 bg-white/10 group-hover:bg-blue-500/30" />
+                  <div className="absolute inset-y-0 left-0 w-1.5 bg-white/20 hover:bg-white cursor-ew-resize rounded-l-sm" />
+                  <div className="absolute inset-y-0 right-0 w-1.5 bg-white/20 hover:bg-white cursor-ew-resize rounded-r-sm" />
                 </Rnd>
               </div>
             ))}
           </div>
 
-          {/* Playhead */}
+          {/* VEED Style Playhead */}
           <div 
-            className="absolute top-0 bottom-0 z-20 w-px bg-blue-500 pointer-events-none"
+            className="absolute top-0 bottom-0 z-20 w-px bg-black pointer-events-none"
             style={{ left: currentTime * pixelsPerSecond }}
           >
-            <div className="absolute -left-1.5 -top-1 h-3 w-3 rotate-45 border-2 border-blue-500 bg-blue-500 shadow-lg shadow-blue-500/40" />
-            <div className="absolute -left-px top-0 h-full w-px bg-blue-500/50 shadow-[0_0_10px_rgba(59,130,246,0.5)]" />
+            <div className="absolute -left-[5px] top-0 h-3 w-[11px] bg-black rounded-b-sm" />
           </div>
         </div>
       </div>
