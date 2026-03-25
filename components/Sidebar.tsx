@@ -12,7 +12,8 @@ const TOOLS = [
 ];
 
 export const Sidebar = () => {
-  const { addItem } = useEditorStore();
+  const { items, addItem } = useEditorStore();
+  const [activeTool, setActiveTool] = React.useState('media');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -24,13 +25,13 @@ export const Sidebar = () => {
         name: file.name,
         type: isVideo ? 'video' : 'image',
         url: url,
-        x: 50,
-        y: 50,
-        width: isVideo ? 320 : 200,
-        height: isVideo ? 180 : 200,
+        x: 100,
+        y: 100,
+        width: isVideo ? 400 : 300,
+        height: isVideo ? 225 : 300,
         startTime: 0,
-        duration: isVideo ? 10 : 5, // Mock duration
-        layer: 1,
+        duration: isVideo ? 10 : 5,
+        layer: items.length + 1,
       });
     }
   };
@@ -39,52 +40,86 @@ export const Sidebar = () => {
     <aside className="flex w-72 flex-col border-r border-white/10 bg-zinc-950">
       <div className="flex h-full">
         {/* Tool Icons */}
-        <div className="flex w-16 flex-col items-center gap-4 border-r border-white/10 py-4">
+        <div className="flex w-20 flex-col items-center gap-2 border-r border-white/5 py-4">
           {TOOLS.map((tool) => (
             <button
               key={tool.id}
-              className="flex h-10 w-10 flex-col items-center justify-center rounded-lg text-zinc-500 transition-colors hover:bg-zinc-900 hover:text-zinc-200"
+              onClick={() => setActiveTool(tool.id)}
+              className={`flex h-14 w-14 flex-col items-center justify-center rounded-xl transition-all ${
+                activeTool === tool.id 
+                  ? 'bg-blue-600/10 text-blue-500 shadow-inner' 
+                  : 'text-zinc-500 hover:bg-zinc-900 hover:text-zinc-300'
+              }`}
             >
-              <tool.icon className="h-5 w-5" />
-              <span className="mt-1 text-[10px]">{tool.label}</span>
+              <tool.icon className={`h-5 w-5 ${activeTool === tool.id ? 'fill-current' : ''}`} />
+              <span className="mt-1 text-[9px] font-bold uppercase tracking-tighter">{tool.label}</span>
             </button>
           ))}
         </div>
 
         {/* Assets Panel */}
-        <div className="flex flex-1 flex-col p-4">
-          <div className="mb-4 flex items-center justify-between">
-            <h2 className="text-xs font-semibold uppercase tracking-wider text-zinc-500">Assets</h2>
+        <div className="flex flex-1 flex-col overflow-hidden">
+          <div className="flex items-center justify-between p-4 border-b border-white/5">
+            <h2 className="text-xs font-bold uppercase tracking-widest text-zinc-400">{activeTool}</h2>
             <button 
               onClick={() => fileInputRef.current?.click()}
-              className="rounded-full bg-zinc-800 p-1.5 text-zinc-300 transition-colors hover:bg-zinc-700 hover:text-white"
+              className="flex items-center gap-1.5 rounded-full bg-blue-600 px-3 py-1 text-[10px] font-bold text-white transition-transform hover:bg-blue-500 active:scale-95 shadow-lg shadow-blue-600/20"
             >
-              <Plus className="h-4 w-4" />
+              <Plus className="h-3 w-3" />
+              Add
             </button>
-            <input 
-              type="file" 
-              ref={fileInputRef} 
-              onChange={handleFileUpload} 
-              className="hidden" 
-              accept="video/*,image/*" 
-            />
           </div>
 
-          <div className="flex flex-1 flex-col items-center justify-center rounded-xl border border-dashed border-white/10 bg-zinc-900/50 p-6 text-center transition-colors hover:border-white/20 hover:bg-zinc-900">
-            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-zinc-800 mb-3">
-              <Upload className="h-6 w-6 text-zinc-400" />
-            </div>
-            <p className="text-xs font-medium text-zinc-300">Drag & drop media</p>
-            <p className="mt-1 text-[10px] text-zinc-500">or click to upload</p>
-            <button 
-              onClick={() => fileInputRef.current?.click()}
-              className="mt-4 rounded-md bg-zinc-800 px-3 py-1.5 text-[10px] font-bold text-white transition-colors hover:bg-zinc-700"
-            >
-              Browse Files
-            </button>
+          <div className="flex-1 overflow-y-auto p-4 custom-scrollbar">
+            {activeTool === 'media' && (
+              <div className="space-y-4">
+                <div 
+                  onClick={() => fileInputRef.current?.click()}
+                  className="flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-white/5 bg-white/[0.02] p-8 text-center transition-all hover:border-blue-500/30 hover:bg-blue-500/[0.02] cursor-pointer group"
+                >
+                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-zinc-900 mb-3 group-hover:scale-110 transition-transform shadow-xl">
+                    <Upload className="h-6 w-6 text-zinc-400 group-hover:text-blue-500" />
+                  </div>
+                  <p className="text-[11px] font-bold text-zinc-300">Upload Media</p>
+                  <p className="mt-1 text-[9px] text-zinc-500">Video, Image or Audio</p>
+                </div>
+
+                <div className="grid grid-cols-2 gap-2">
+                  {items.map((item) => (
+                    <div 
+                      key={`asset-${item.id}`}
+                      className="group relative aspect-square overflow-hidden rounded-xl border border-white/10 bg-zinc-900 transition-all hover:border-blue-500/50"
+                    >
+                      {item.type === 'video' ? (
+                        <video src={item.url} className="h-full w-full object-cover opacity-60 group-hover:opacity-100 transition-opacity" />
+                      ) : (
+                        <img src={item.url} className="h-full w-full object-cover opacity-60 group-hover:opacity-100 transition-opacity" alt={item.name} />
+                      )}
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                      <p className="absolute bottom-2 left-2 right-2 truncate text-[9px] font-medium text-white opacity-0 group-hover:opacity-100 transition-opacity">
+                        {item.name}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+            
+            {activeTool !== 'media' && (
+              <div className="flex h-40 flex-col items-center justify-center text-center">
+                <p className="text-[10px] font-medium text-zinc-600 italic">Coming soon: {activeTool} library</p>
+              </div>
+            )}
           </div>
         </div>
       </div>
+      <input 
+        type="file" 
+        ref={fileInputRef} 
+        onChange={handleFileUpload} 
+        className="hidden" 
+        accept="video/*,image/*" 
+      />
     </aside>
   );
 };
