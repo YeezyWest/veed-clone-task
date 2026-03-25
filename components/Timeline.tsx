@@ -2,12 +2,12 @@
 
 import React, { useRef, useEffect } from 'react';
 import { useEditorStore } from '@/store/useEditorStore';
-import { Play, Pause, SkipBack, SkipForward, Clock, Scissors, SquareArrowOutUpRight, Film, ImageIcon } from 'lucide-react';
+import { Play, Pause, SkipBack, SkipForward, Clock, Scissors, SquareArrowOutUpRight, Film, ImageIcon, Trash2 } from 'lucide-react';
 
 import { Rnd } from 'react-rnd';
 
 export const Timeline = () => {
-  const { items, updateItem, currentTime, setCurrentTime, duration, isPlaying, setPlaying, selectedId, setSelectedId } = useEditorStore();
+  const { items, updateItem, removeItem, currentTime, setCurrentTime, duration, isPlaying, setPlaying, selectedId, setSelectedId } = useEditorStore();
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const pixelsPerSecond = 40; // Increased for better resolution
@@ -133,14 +133,26 @@ export const Timeline = () => {
                         : 'border-white/10 bg-zinc-900 hover:border-white/20'
                   }`}
                 >
-                  <div className="flex h-full w-full flex-col justify-center px-3">
+                  <div className="flex h-full w-full flex-col justify-center px-3 pr-8">
                     <div className="flex items-center gap-2">
                       {item.type === 'video' ? <Film className="h-3 w-3 text-blue-400" /> : <ImageIcon className="h-3 w-3 text-purple-400" />}
                       <span className="truncate font-semibold text-zinc-200">{item.name}</span>
                     </div>
                     <span className="mt-0.5 text-[8px] text-zinc-500">{(item.duration).toFixed(1)}s</span>
                   </div>
-                  
+
+                  {/* Delete button — shown on selected clip */}
+                  {selectedId === item.id && (
+                    <button
+                      onMouseDown={(e) => e.stopPropagation()}
+                      onClick={(e) => { e.stopPropagation(); removeItem(item.id); setSelectedId(null); }}
+                      className="pointer-events-auto absolute right-2 top-1/2 -translate-y-1/2 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-white shadow-md hover:scale-110 transition-transform z-50"
+                      title="Delete clip"
+                    >
+                      <Trash2 className="h-2.5 w-2.5" />
+                    </button>
+                  )}
+
                   {/* Handle indicators */}
                   <div className="absolute inset-y-0 left-0 w-1 bg-white/10 group-hover:bg-blue-500/30" />
                   <div className="absolute inset-y-0 right-0 w-1 bg-white/10 group-hover:bg-blue-500/30" />

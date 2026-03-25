@@ -3,10 +3,10 @@
 import React from 'react';
 import { Rnd } from 'react-rnd';
 import { useEditorStore } from '@/store/useEditorStore';
-import { Play, Pause, SkipBack, SkipForward } from 'lucide-react';
+import { Play, Pause, SkipBack, SkipForward, Trash2 } from 'lucide-react';
 
 export const Canvas = () => {
-  const { items, updateItem, selectedId, setSelectedId, currentTime, isPlaying } = useEditorStore();
+  const { items, updateItem, removeItem, selectedId, setSelectedId, currentTime, isPlaying } = useEditorStore();
 
   const activeItems = items.filter(
     (item) => currentTime >= item.startTime && currentTime <= item.startTime + item.duration
@@ -58,6 +58,18 @@ export const Canvas = () => {
                   </div>
                 )}
               </div>
+
+              {/* Delete button — visible when selected */}
+              {selectedId === item.id && (
+                <button
+                  onMouseDown={(e) => { e.stopPropagation(); }}
+                  onClick={(e) => { e.stopPropagation(); removeItem(item.id); setSelectedId(null); }}
+                  className="pointer-events-auto absolute -top-3 -right-3 flex h-6 w-6 items-center justify-center rounded-full bg-red-500 text-white shadow-lg shadow-red-500/40 transition-transform hover:scale-110 z-50"
+                  title="Delete item (or press Delete key)"
+                >
+                  <Trash2 className="h-3 w-3" />
+                </button>
+              )}
             </Rnd>
           ))}
           
