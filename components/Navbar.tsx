@@ -1,17 +1,26 @@
 'use client';
 
 import React from 'react';
-import { Download, Share2 } from 'lucide-react';
+import { Download, Share2, Menu } from 'lucide-react';
 import { ExportModal } from './ExportModal';
+import { useEditorStore } from '@/store/useEditorStore';
 
 export const Navbar = () => {
   const [isExportOpen, setIsExportOpen] = React.useState(false);
+  const { setMobileSidebarOpen } = useEditorStore();
 
   return (
     <>
       <nav className="flex h-12 items-center justify-between border-b border-[#e5e5e5] bg-white px-4">
         {/* Left: Logo + Project Name */}
         <div className="flex items-center gap-3">
+          <button 
+            className="md:hidden p-1.5 -ml-2 text-gray-500 hover:bg-gray-100 rounded-md transition-colors"
+            onClick={() => setMobileSidebarOpen(true)}
+            aria-label="Open Map Toolbar"
+          >
+            <Menu className="h-5 w-5" />
+          </button>
           <div className="flex h-7 w-7 items-center justify-center rounded-md bg-gradient-to-br from-violet-600 to-blue-500 shadow-sm">
             <span className="text-xs font-black text-white">V</span>
           </div>

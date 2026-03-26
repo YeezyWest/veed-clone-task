@@ -24,6 +24,9 @@ interface EditorState {
   selectedId: string | null;
   canvasFormat: string;
   backgroundColor: string;
+  timelineHeight: number;
+  sidebarWidth: number;
+  isMobileSidebarOpen: boolean;
   
   // Actions
   addItem: (item: Omit<EditorItem, 'id'>) => void;
@@ -35,6 +38,9 @@ interface EditorState {
   setDuration: (duration: number) => void;
   setCanvasFormat: (format: string) => void;
   setBackgroundColor: (color: string) => void;
+  setTimelineHeight: (height: number) => void;
+  setSidebarWidth: (width: number) => void;
+  setMobileSidebarOpen: (isOpen: boolean) => void;
 }
 
 export const useEditorStore = create<EditorState>((set) => ({
@@ -45,6 +51,9 @@ export const useEditorStore = create<EditorState>((set) => ({
   selectedId: null,
   canvasFormat: '16:9',
   backgroundColor: '#000000',
+  timelineHeight: 256,
+  sidebarWidth: 340,
+  isMobileSidebarOpen: false,
 
   addItem: (item) => set((state) => ({
     items: [...state.items, { ...item, id: Math.random().toString(36).substr(2, 9) }]
@@ -65,4 +74,7 @@ export const useEditorStore = create<EditorState>((set) => ({
   setDuration: (duration) => set({ duration }),
   setCanvasFormat: (canvasFormat) => set({ canvasFormat }),
   setBackgroundColor: (backgroundColor) => set({ backgroundColor }),
+  setTimelineHeight: (timelineHeight) => set({ timelineHeight }),
+  setSidebarWidth: (sidebarWidth) => set({ sidebarWidth }),
+  setMobileSidebarOpen: (isMobileSidebarOpen) => set({ isMobileSidebarOpen }),
 }));

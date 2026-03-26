@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { Upload, Type, Layout, Search, Layers, Clapperboard, AudioWaveform, Image as ImageIcon } from 'lucide-react';
 import { useEditorStore } from '@/store/useEditorStore';
 
@@ -14,10 +14,33 @@ const TOOLS = [
 ];
 
 export const Sidebar = () => {
-  const { items, addItem } = useEditorStore();
+  const { items, addItem, sidebarWidth, setSidebarWidth, isMobileSidebarOpen, setMobileSidebarOpen } = useEditorStore();
   const [activeTool, setActiveTool] = useState('media');
   const [filter, setFilter] = useState<'all' | 'images' | 'videos'>('all');
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isResizingSidebar, setIsResizingSidebar] = useState(false);
+
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      if (!isResizingSidebar) return;
+      setSidebarWidth(Math.max(250, Math.min(e.clientX, window.innerWidth / 2)));
+    };
+    const handleMouseUp = () => setIsResizingSidebar(false);
+
+    if (isResizingSidebar) {
+      window.addEventListener('mousemove', handleMouseMove);
+      window.addEventListener('mouseup', handleMouseUp);
+      document.body.style.cursor = 'col-resize';
+      document.body.style.userSelect = 'none';
+    } else {
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+    }
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, [isResizingSidebar, setSidebarWidth]);
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -48,8 +71,24 @@ export const Sidebar = () => {
   });
 
   return (
-    <aside className="flex w-[340px] flex-col border-r border-[#e5e5e5] bg-white h-full z-10 shrink-0">
-      <div className="flex h-full">
+    <>
+      {/* Mobile Backdrop */}
+      {isMobileSidebarOpen && (
+        <div 
+          className="fixed inset-0 z-40 bg-black/50 md:hidden transition-opacity"
+          onClick={() => setMobileSidebarOpen(false)}
+        />
+      )}
+      <aside 
+        className={`fixed inset-y-0 left-0 z-50 flex h-full shrink-0 flex-col border-r border-[#e5e5e5] bg-white transition-transform duration-300 md:relative md:translate-x-0 ${isMobileSidebarOpen ? 'translate-x-0 shadow-2xl' : '-translate-x-full'}`} 
+        style={{ width: sidebarWidth }}
+      >
+        {/* Resizer Handle (Only active on desktop) */}
+        <div 
+          onMouseDown={(e) => { e.preventDefault(); setIsResizingSidebar(true); }}
+          className="absolute bottom-0 right-0 top-0 z-50 hidden w-1.5 translate-x-1/2 cursor-col-resize hover:bg-blue-500/50 md:block transition-colors"
+        />
+        <div className="flex h-full">
         {/* Leftmost Tool Icons Strip */}
         <div className="flex w-[72px] flex-col items-center gap-2 border-r border-[#e5e5e5] bg-[#f8f8f8] py-4 shrink-0">
           {TOOLS.map((tool) => (
@@ -157,13 +196,14 @@ export const Sidebar = () => {
           </div>
         </div>
       </div>
-      <input 
-        type="file" 
-        ref={fileInputRef} 
-        onChange={handleFileUpload} 
-        className="hidden" 
-        accept="video/*,image/*" 
-      />
-    </aside>
+        <input 
+          type="file" 
+          ref={fileInputRef} 
+          onChange={handleFileUpload} 
+          className="hidden" 
+          accept="video/*,image/*" 
+        />
+      </aside>
+    </>
   );
 };

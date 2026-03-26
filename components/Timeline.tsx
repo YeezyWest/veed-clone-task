@@ -7,8 +7,32 @@ import { Play, Pause, SkipBack, SkipForward, Scissors, Film, ImageIcon, Trash2, 
 import { Rnd } from 'react-rnd';
 
 export const Timeline = () => {
-  const { items, addItem, updateItem, removeItem, currentTime, setCurrentTime, duration, isPlaying, setPlaying, selectedId, setSelectedId } = useEditorStore();
+  const { items, addItem, updateItem, removeItem, currentTime, setCurrentTime, duration, isPlaying, setPlaying, selectedId, setSelectedId, timelineHeight, setTimelineHeight } = useEditorStore();
   const scrollRef = useRef<HTMLDivElement>(null);
+  const [isResizingTimeline, setIsResizingTimeline] = useState(false);
+
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      if (!isResizingTimeline) return;
+      const newHeight = window.innerHeight - e.clientY;
+      setTimelineHeight(Math.max(150, Math.min(newHeight, window.innerHeight - 200)));
+    };
+    const handleMouseUp = () => setIsResizingTimeline(false);
+
+    if (isResizingTimeline) {
+      window.addEventListener('mousemove', handleMouseMove);
+      window.addEventListener('mouseup', handleMouseUp);
+      document.body.style.cursor = 'row-resize';
+      document.body.style.userSelect = 'none';
+    } else {
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+    }
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, [isResizingTimeline, setTimelineHeight]);
 
   const pixelsPerSecond = 40; // Increased for better resolution
   const totalWidth = duration * pixelsPerSecond;
@@ -93,9 +117,13 @@ export const Timeline = () => {
   };
 
   return (
-    <div className="flex h-64 flex-col border-t border-[#e5e5e5] bg-white">
-      {/* VEED Toolbar */}
-      <div className="flex h-14 shrink-0 items-center justify-between border-b border-[#e5e5e5] px-6">
+    <div className="flex flex-col border-t border-[#e5e5e5] bg-white relative shrink-0" style={{ height: timelineHeight }}>
+      {/* Resizer Handle */}
+      <div 
+        onMouseDown={(e) => { e.preventDefault(); setIsResizingTimeline(true); }}
+        className="absolute left-0 right-0 top-0 h-1.5 -translate-y-1/2 z-50 cursor-row-resize hover:bg-blue-500/50 transition-colors"
+      />
+      <div className="flex h-14 shrink-0 items-center justify-between gap-4 border-b border-[#e5e5e5] px-2 md:px-6 overflow-x-auto custom-scrollbar">
         {/* Left: Split tool */}
         <div className="flex w-[200px] items-center gap-4">
           <button 
