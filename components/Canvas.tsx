@@ -15,7 +15,7 @@ const FORMATS = [
 ];
 
 export const Canvas = () => {
-  const { items, updateItem, removeItem, selectedId, setSelectedId, currentTime, isPlaying, canvasFormat, setCanvasFormat, backgroundColor, setBackgroundColor } = useEditorStore();
+  const { items, addItem, updateItem, removeItem, selectedId, setSelectedId, currentTime, isPlaying, canvasFormat, setCanvasFormat, backgroundColor, setBackgroundColor } = useEditorStore();
   const [showFormatMenu, setShowFormatMenu] = useState(false);
   const [showColorMenu, setShowColorMenu] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -35,11 +35,53 @@ export const Canvas = () => {
     (item) => currentTime >= item.startTime && currentTime <= item.startTime + item.duration
   );
 
+  const handleCanvasDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    const file = e.dataTransfer.files?.[0];
+    if (file) {
+      const isVideo = file.type.startsWith('video');
+      const isImage = file.type.startsWith('image');
+      if (!isVideo && !isImage) return;
+
+      const url = URL.createObjectURL(file);
+      const itemWidth = isVideo ? 400 : 300;
+      const itemHeight = isVideo ? 225 : 300;
+      
+      let x = 100;
+      let y = 100;
+      
+      const canvasEl = document.getElementById('canvas-container');
+      if (canvasEl) {
+        x = Math.max(0, (canvasEl.clientWidth - itemWidth) / 2);
+        y = Math.max(0, (canvasEl.clientHeight - itemHeight) / 2);
+      }
+
+      addItem({
+        name: file.name,
+        type: isVideo ? 'video' : 'image',
+        url: url,
+        x,
+        y,
+        width: itemWidth,
+        height: itemHeight,
+        startTime: 0,
+        duration: isVideo ? 10 : 5,
+        trimStart: 0,
+        layer: items.length + 1,
+      });
+    }
+  };
+
   return (
     <div className="relative flex flex-1 flex-col overflow-hidden bg-[#f8f8f8]">
       {/* Canvas Area */}
-      <div className="relative flex flex-1 flex-col items-center justify-center p-6 min-h-0 overflow-y-auto custom-scrollbar">
+      <div 
+        className="relative flex flex-1 flex-col items-center justify-center p-6 min-h-0 overflow-y-auto custom-scrollbar"
+        onDragOver={(e) => e.preventDefault()}
+        onDrop={handleCanvasDrop}
+      >
         <div 
+          id="canvas-container"
           className="relative w-full max-w-[650px] shrink-0 shadow-md ring-1 ring-gray-200 transition-all duration-300"
           style={{ 
              aspectRatio: canvasFormat.replace(':', '/'),

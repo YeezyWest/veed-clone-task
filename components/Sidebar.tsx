@@ -47,14 +47,27 @@ export const Sidebar = () => {
     if (file) {
       const url = URL.createObjectURL(file);
       const isVideo = file.type.startsWith('video');
+      
+      const itemWidth = isVideo ? 400 : 300;
+      const itemHeight = isVideo ? 225 : 300;
+      
+      let x = 100;
+      let y = 100;
+      
+      const canvasEl = document.getElementById('canvas-container');
+      if (canvasEl) {
+        x = Math.max(0, (canvasEl.clientWidth - itemWidth) / 2);
+        y = Math.max(0, (canvasEl.clientHeight - itemHeight) / 2);
+      }
+
       addItem({
         name: file.name,
         type: isVideo ? 'video' : 'image',
         url: url,
-        x: 100,
-        y: 100,
-        width: isVideo ? 400 : 300,
-        height: isVideo ? 225 : 300,
+        x,
+        y,
+        width: itemWidth,
+        height: itemHeight,
         startTime: 0,
         duration: isVideo ? 10 : 5,
         trimStart: 0,
