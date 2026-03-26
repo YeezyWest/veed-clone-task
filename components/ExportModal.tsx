@@ -54,32 +54,41 @@ export const ExportModal = ({ isOpen, onClose }: ExportModalProps) => {
       setProgressText('Processing media files...');
       
       const inputs: string[] = [];
-      let filterComplex = `color=c=black:s=1280x720:d=${store.duration} [bg]; `;
+      let filterComplex = `color=c=black:s=1280x720:d=${store.duration} [bg];`;
       
-      for (let i = 0; i < items.length; i++) {
-        const item = items[i];
+      const exportableItems = items.filter(i => i.url);
+
+      for (let i = 0; i < exportableItems.length; i++) {
+        const item = exportableItems[i];
         const ext = item.type === 'video' ? 'mp4' : 'png';
         const filename = `input_${i}.${ext}`;
         
-        await ffmpeg.writeFile(filename, await fetchFile(item.url));
-        inputs.push('-i', filename);
+        // Fetch raw blob data robustly
+        const response = await fetch(item.url!);
+        const arrayBuffer = await response.arrayBuffer();
+        await ffmpeg.writeFile(filename, new Uint8Array(arrayBuffer));
 
-        // Standardize all streams to 1280x720 and process durations/trims
         if (item.type === 'video') {
-           filterComplex += `[${i}:v] trim=start=${item.trimStart || 0}:duration=${item.duration},setpts=PTS-STARTPTS,scale=1280:720:force_original_aspect_ratio=decrease,pad=1280:720:(ow-iw)/2:(oh-ih)/2 [v${i}]; `;
+           inputs.push('-i', filename);
+           filterComplex += `[${i}:v]trim=start=${item.trimStart || 0}:duration=${item.duration},setpts=PTS-STARTPTS,scale=1280:720:force_original_aspect_ratio=decrease,pad=1280:720:(ow-iw)/2:(oh-ih)/2,format=rgba[v${i}];`;
         } else {
-           filterComplex += `[${i}:v] loop=loop=-1:size=1,setpts=N/FRAME_RATE/TB,scale=1280:720:force_original_aspect_ratio=decrease,pad=1280:720:(ow-iw)/2:(oh-ih)/2 [v${i}]; `;
+           // For images, continuously loop it to mimic a video stream
+           inputs.push('-loop', '1', '-framerate', '30', '-t', item.duration.toString(), '-i', filename);
+           filterComplex += `[${i}:v]setpts=PTS-STARTPTS,scale=1280:720:force_original_aspect_ratio=decrease,pad=1280:720:(ow-iw)/2:(oh-ih)/2,format=rgba[v${i}];`;
         }
       }
 
       // Chain overlays together sequentially
       let lastOverlay = '[bg]';
-      for (let i = 0; i < items.length; i++) {
-        const item = items[i];
+      for (let i = 0; i < exportableItems.length; i++) {
+        const item = exportableItems[i];
         const nextOverlay = `[ov${i}]`;
-        filterComplex += `${lastOverlay}[v${i}] overlay=enable='between(t,${item.startTime},${item.startTime + item.duration})' ${nextOverlay}; `;
+        filterComplex += `${lastOverlay}[v${i}]overlay=enable='between(t,${item.startTime},${item.startTime + item.duration})':format=auto${nextOverlay};`;
         lastOverlay = nextOverlay;
       }
+
+      // Remove the final trailing semicolon! (Crucial to prevent FFmpeg syntax error)
+      filterComplex = filterComplex.replace(/;$/, '');
 
       const args = [
         ...inputs,
