@@ -146,7 +146,7 @@ export const Timeline = () => {
           </button>
           <button 
              onClick={() => setPlaying(!isPlaying)}
-             className="flex h-9 w-9 items-center justify-center rounded-full bg-black text-white shadow-md transition-transform hover:scale-105 active:scale-95"
+             className="flex h-9 w-9 items-center justify-center rounded-full bg-gray-100 text-gray-900 hover:bg-gray-200 transition-transform hover:scale-105 active:scale-95"
           >
             {isPlaying ? <Pause className="h-4 w-4 fill-current" /> : <Play className="h-4 w-4 fill-current ml-0.5" />}
           </button>
@@ -288,7 +288,7 @@ export const Timeline = () => {
 
           {/* VEED Style Playhead */}
           <div 
-            className="absolute top-0 bottom-0 z-20 w-px bg-black pointer-events-none"
+            className="absolute top-0 bottom-0 z-20 w-px bg-blue-500 pointer-events-none"
             style={{ left: currentTime * pixelsPerSecond }}
           >
             <div 
@@ -296,7 +296,7 @@ export const Timeline = () => {
                 e.preventDefault();
                 setIsScrubbing(true);
               }}
-              className="absolute -left-[5px] top-0 h-4 w-[11px] bg-black rounded-b-sm cursor-ew-resize pointer-events-auto hover:bg-gray-800 z-30 transition-colors shadow-sm"
+              className="absolute -left-[5px] top-0 h-4 w-[11px] bg-blue-500 rounded-b-sm cursor-ew-resize pointer-events-auto hover:bg-blue-600 z-30 transition-colors shadow-sm"
               title="Drag to scrub"
             />
           </div>

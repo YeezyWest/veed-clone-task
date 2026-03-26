@@ -54,7 +54,7 @@ export const useEditorStore = create<EditorState>((set) => ({
   isPlaying: false,
   selectedId: null,
   canvasFormat: '16:9',
-  backgroundColor: '#000000',
+  backgroundColor: '#6b7280',
   timelineHeight: 256,
   sidebarWidth: 340,
   isMobileSidebarOpen: false,

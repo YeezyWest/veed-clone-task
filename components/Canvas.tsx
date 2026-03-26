@@ -3,7 +3,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Rnd } from 'react-rnd';
 import { useEditorStore } from '@/store/useEditorStore';
-import { Play, Pause, SkipBack, SkipForward, Trash2, Monitor, ChevronDown } from 'lucide-react';
+import { Play, Pause, SkipBack, SkipForward, Trash2, Monitor, ChevronDown, Settings } from 'lucide-react';
 
 const FORMATS = [
   { id: '16:9', label: 'Wide Landscape' },
@@ -174,6 +174,15 @@ export const Canvas = () => {
           >
             <div className="h-4 w-4 rounded-full border border-gray-200" style={{ backgroundColor }} />
             Background
+          </button>
+
+          <div className="h-4 w-px bg-gray-200" />
+          
+          <button 
+            className="flex items-center gap-2 text-xs font-medium text-gray-700 hover:text-gray-900"
+          >
+            <Settings className="h-4 w-4" />
+            Settings
           </button>
 
           {/* Format Menu Popup */}

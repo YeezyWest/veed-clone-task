@@ -1,16 +1,20 @@
 'use client';
 
 import React, { useRef, useState, useEffect } from 'react';
-import { Upload, Type, Layout, Search, Layers, Clapperboard, AudioWaveform, Image as ImageIcon } from 'lucide-react';
+import { Upload, Type, Layout, Search, Layers, Clapperboard, AudioWaveform, Image as ImageIcon, Sparkles, Video, Music, FileText, Briefcase, Settings } from 'lucide-react';
 import { useEditorStore } from '@/store/useEditorStore';
 
 const TOOLS = [
-  { id: 'media', icon: ImageIcon, label: 'Media' },
-  { id: 'audio', icon: AudioWaveform, label: 'Audio' },
+  { id: 'ai-tools', icon: Sparkles, label: 'AI Tools' },
+  { id: 'media', icon: Video, label: 'Video' },
+  { id: 'audio', icon: Music, label: 'Audio' },
+  { id: 'image', icon: ImageIcon, label: 'Image' },
   { id: 'subtitles', icon: Type, label: 'Subtitles' },
   { id: 'text', icon: Type, label: 'Text' },
   { id: 'elements', icon: Layout, label: 'Elements' },
-  { id: 'templates', icon: Layers, label: 'Templates' },
+  { id: 'script', icon: FileText, label: 'Script' },
+  { id: 'brand-kit', icon: Briefcase, label: 'Brand Kit' },
+  { id: 'settings', icon: Settings, label: 'Settings' },
 ];
 
 export const Sidebar = () => {
