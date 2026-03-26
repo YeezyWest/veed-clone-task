@@ -27,6 +27,8 @@ interface EditorState {
   timelineHeight: number;
   sidebarWidth: number;
   isMobileSidebarOpen: boolean;
+  zoomLevel: number;
+  isMuted: boolean;
   
   // Actions
   addItem: (item: Omit<EditorItem, 'id'>) => void;
@@ -41,6 +43,8 @@ interface EditorState {
   setTimelineHeight: (height: number) => void;
   setSidebarWidth: (width: number) => void;
   setMobileSidebarOpen: (isOpen: boolean) => void;
+  setZoomLevel: (zoom: number) => void;
+  setMuted: (muted: boolean) => void;
 }
 
 export const useEditorStore = create<EditorState>((set) => ({
@@ -54,6 +58,8 @@ export const useEditorStore = create<EditorState>((set) => ({
   timelineHeight: 256,
   sidebarWidth: 340,
   isMobileSidebarOpen: false,
+  zoomLevel: 40,
+  isMuted: false,
 
   addItem: (item) => set((state) => ({
     items: [...state.items, { ...item, id: Math.random().toString(36).substr(2, 9) }]
@@ -77,4 +83,6 @@ export const useEditorStore = create<EditorState>((set) => ({
   setTimelineHeight: (timelineHeight) => set({ timelineHeight }),
   setSidebarWidth: (sidebarWidth) => set({ sidebarWidth }),
   setMobileSidebarOpen: (isMobileSidebarOpen) => set({ isMobileSidebarOpen }),
+  setZoomLevel: (zoomLevel) => set({ zoomLevel }),
+  setMuted: (isMuted) => set({ isMuted }),
 }));

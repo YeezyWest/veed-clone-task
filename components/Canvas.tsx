@@ -197,7 +197,7 @@ export const Canvas = () => {
 
 const VideoItem = ({ item, currentTime, isPlaying }: { item: any, currentTime: number, isPlaying: boolean }) => {
   const videoRef = React.useRef<HTMLVideoElement>(null);
-  const { setCurrentTime } = useEditorStore();
+  const { setCurrentTime, isMuted } = useEditorStore();
 
   // Only seek when PAUSED (manual scrubbing). Never interrupt a playing video.
   React.useEffect(() => {
@@ -241,6 +241,7 @@ const VideoItem = ({ item, currentTime, isPlaying }: { item: any, currentTime: n
       src={item.url}
       className="h-full w-full object-cover"
       playsInline
+      muted={isMuted}
     />
   );
 };

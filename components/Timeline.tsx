@@ -7,7 +7,7 @@ import { Play, Pause, SkipBack, SkipForward, Scissors, Film, ImageIcon, Trash2, 
 import { Rnd } from 'react-rnd';
 
 export const Timeline = () => {
-  const { items, addItem, updateItem, removeItem, currentTime, setCurrentTime, duration, isPlaying, setPlaying, selectedId, setSelectedId, timelineHeight, setTimelineHeight } = useEditorStore();
+  const { items, addItem, updateItem, removeItem, currentTime, setCurrentTime, duration, isPlaying, setPlaying, selectedId, setSelectedId, timelineHeight, setTimelineHeight, zoomLevel, setZoomLevel, isMuted, setMuted } = useEditorStore();
   const scrollRef = useRef<HTMLDivElement>(null);
   const [isResizingTimeline, setIsResizingTimeline] = useState(false);
 
@@ -34,7 +34,7 @@ export const Timeline = () => {
     };
   }, [isResizingTimeline, setTimelineHeight]);
 
-  const pixelsPerSecond = 40; // Increased for better resolution
+  const pixelsPerSecond = zoomLevel; 
   const totalWidth = duration * pixelsPerSecond;
 
   const handleTimelineClick = (e: React.MouseEvent) => {
@@ -125,7 +125,7 @@ export const Timeline = () => {
       />
       <div className="flex h-14 shrink-0 items-center justify-between gap-4 border-b border-[#e5e5e5] px-2 md:px-6 overflow-x-auto custom-scrollbar">
         {/* Left: Split tool */}
-        <div className="flex w-[200px] items-center gap-4">
+        <div className="flex shrink-0 items-center gap-4 md:w-[200px]">
           <button 
             onClick={handleSplit}
             disabled={!selectedId}
@@ -137,7 +137,7 @@ export const Timeline = () => {
         </div>
 
         {/* Center: Playback Controls */}
-        <div className="flex flex-1 items-center justify-center gap-6">
+        <div className="flex shrink-0 flex-1 items-center justify-center gap-4 md:gap-6 min-w-[200px]">
           <button 
             onClick={() => setCurrentTime(0)}
             className="text-gray-400 transition-colors hover:text-gray-800"
@@ -160,16 +160,27 @@ export const Timeline = () => {
         </div>
 
         {/* Right: Zoom & View Tools */}
-        <div className="flex w-[200px] items-center justify-end gap-4 text-gray-400">
+        <div className="flex shrink-0 items-center justify-end gap-3 text-gray-400 md:w-[200px] pr-2">
           <div className="flex items-center gap-2">
-            <button className="hover:text-gray-800"><ZoomOut className="h-4 w-4" /></button>
-            <div className="h-1 w-16 rounded-full bg-gray-200">
-              <div className="h-full w-1/2 rounded-full bg-black"></div>
-            </div>
-            <button className="hover:text-gray-800"><ZoomIn className="h-4 w-4" /></button>
+            <button onClick={() => setZoomLevel(Math.max(10, zoomLevel - 10))} className="hover:text-gray-800"><ZoomOut className="h-4 w-4" /></button>
+            <input 
+              type="range" 
+              min="10" 
+              max="150" 
+              value={zoomLevel} 
+              onChange={(e) => setZoomLevel(Number(e.target.value))}
+              className="w-16 h-1 accent-black md:w-20 cursor-pointer"
+            />
+            <button onClick={() => setZoomLevel(Math.min(150, zoomLevel + 10))} className="hover:text-gray-800"><ZoomIn className="h-4 w-4" /></button>
           </div>
-          <button className="hover:text-gray-800"><Volume2 className="h-4 w-4" /></button>
-          <button className="hover:text-gray-800"><Maximize className="h-4 w-4" /></button>
+          <button 
+            onClick={() => setMuted(!isMuted)} 
+            className={`hover:text-gray-800 transition-colors ml-1 ${isMuted ? 'text-red-500 hover:text-red-600' : ''}`}
+            title={isMuted ? "Unmute" : "Mute"}
+          >
+            <Volume2 className="h-4 w-4" />
+          </button>
+          <button className="hover:text-gray-800 hidden md:block" onClick={() => document.documentElement.requestFullscreen().catch(()=>{})} title="Fullscreen"><Maximize className="h-4 w-4" /></button>
         </div>
       </div>
 
@@ -240,7 +251,7 @@ export const Timeline = () => {
                     e.stopPropagation();
                     setSelectedId(item.id);
                   }}
-                  className={`group rounded-md text-[10px] shadow-sm overflow-hidden transition-all ${
+                  className={`group rounded-md text-[10px] shadow-sm overflow-hidden ${
                     selectedId === item.id 
                         ? 'ring-2 ring-blue-500 z-10' 
                         : 'border border-[#2d2d2d] hover:border-blue-500 z-0'
