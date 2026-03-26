@@ -34,6 +34,7 @@ export const Sidebar = () => {
         height: isVideo ? 225 : 300,
         startTime: 0,
         duration: isVideo ? 10 : 5,
+        trimStart: 0,
         layer: items.length + 1,
       });
     }

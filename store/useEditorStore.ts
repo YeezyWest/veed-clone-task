@@ -11,6 +11,7 @@ export interface EditorItem {
   height: number;
   startTime: number; // in seconds
   duration: number; // in seconds
+  trimStart?: number; // offsets the start time of the media file
   layer: number;
   content?: string; // for text items
 }
@@ -21,6 +22,8 @@ interface EditorState {
   duration: number;
   isPlaying: boolean;
   selectedId: string | null;
+  canvasFormat: string;
+  backgroundColor: string;
   
   // Actions
   addItem: (item: Omit<EditorItem, 'id'>) => void;
@@ -30,6 +33,8 @@ interface EditorState {
   setPlaying: (isPlaying: boolean) => void;
   setSelectedId: (id: string | null) => void;
   setDuration: (duration: number) => void;
+  setCanvasFormat: (format: string) => void;
+  setBackgroundColor: (color: string) => void;
 }
 
 export const useEditorStore = create<EditorState>((set) => ({
@@ -38,6 +43,8 @@ export const useEditorStore = create<EditorState>((set) => ({
   duration: 60, // Default 60 seconds
   isPlaying: false,
   selectedId: null,
+  canvasFormat: '16:9',
+  backgroundColor: '#000000',
 
   addItem: (item) => set((state) => ({
     items: [...state.items, { ...item, id: Math.random().toString(36).substr(2, 9) }]
@@ -56,4 +63,6 @@ export const useEditorStore = create<EditorState>((set) => ({
   setPlaying: (isPlaying) => set({ isPlaying }),
   setSelectedId: (id) => set({ selectedId: id }),
   setDuration: (duration) => set({ duration }),
+  setCanvasFormat: (canvasFormat) => set({ canvasFormat }),
+  setBackgroundColor: (backgroundColor) => set({ backgroundColor }),
 }));

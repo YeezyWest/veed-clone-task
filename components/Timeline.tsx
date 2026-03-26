@@ -1,13 +1,13 @@
 'use client';
 
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import { useEditorStore } from '@/store/useEditorStore';
 import { Play, Pause, SkipBack, SkipForward, Scissors, Film, ImageIcon, Trash2, ZoomIn, ZoomOut, Volume2, Maximize } from 'lucide-react';
 
 import { Rnd } from 'react-rnd';
 
 export const Timeline = () => {
-  const { items, updateItem, removeItem, currentTime, setCurrentTime, duration, isPlaying, setPlaying, selectedId, setSelectedId } = useEditorStore();
+  const { items, addItem, updateItem, removeItem, currentTime, setCurrentTime, duration, isPlaying, setPlaying, selectedId, setSelectedId } = useEditorStore();
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const pixelsPerSecond = 40; // Increased for better resolution
@@ -20,6 +20,56 @@ export const Timeline = () => {
       setCurrentTime(Math.min(Math.max(0, x / pixelsPerSecond), duration));
     }
   };
+
+  const handleSplit = () => {
+    if (!selectedId) return;
+    const item = items.find(i => i.id === selectedId);
+    if (!item) return;
+
+    // Check if playhead is intersecting the item
+    if (currentTime > item.startTime && currentTime < item.startTime + item.duration) {
+      const splitPoint = currentTime - item.startTime;
+      
+      // Update original item to end at split point
+      updateItem(item.id, { duration: splitPoint });
+      
+      // Add new split item
+      addItem({
+        ...item,
+        startTime: currentTime,
+        duration: item.duration - splitPoint,
+        trimStart: (item.trimStart || 0) + splitPoint,
+      });
+    }
+  };
+
+  const [isScrubbing, setIsScrubbing] = useState(false);
+
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      if (!isScrubbing) return;
+      // We calculate time based on the timeline track client rect
+      const trackElement = document.querySelector('.timeline-track-inner');
+      if (!trackElement) return;
+      
+      const rect = trackElement.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      setCurrentTime(Math.min(Math.max(0, x / pixelsPerSecond), duration));
+    };
+
+    const handleMouseUp = () => {
+      setIsScrubbing(false);
+    };
+
+    if (isScrubbing) {
+      window.addEventListener('mousemove', handleMouseMove);
+      window.addEventListener('mouseup', handleMouseUp);
+    }
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, [isScrubbing, duration, setCurrentTime, pixelsPerSecond]);
 
   useEffect(() => {
     let interval: NodeJS.Timeout;
@@ -48,7 +98,11 @@ export const Timeline = () => {
       <div className="flex h-14 shrink-0 items-center justify-between border-b border-[#e5e5e5] px-6">
         {/* Left: Split tool */}
         <div className="flex w-[200px] items-center gap-4">
-          <button className="flex items-center gap-1.5 text-xs font-semibold text-gray-600 transition-colors hover:text-gray-900">
+          <button 
+            onClick={handleSplit}
+            disabled={!selectedId}
+            className={`flex items-center gap-1.5 text-xs font-semibold transition-colors ${selectedId ? 'text-gray-900 hover:text-blue-600' : 'text-gray-400 cursor-not-allowed opacity-50'}`}
+          >
             <Scissors className="h-4 w-4" />
             Split
           </button>
@@ -135,9 +189,20 @@ export const Timeline = () => {
                     updateItem(item.id, { startTime: Math.max(0, d.x / pixelsPerSecond) });
                   }}
                   onResizeStop={(e, direction, ref, delta, position) => {
+                    const newDuration = Math.max(0.5, parseInt(ref.style.width) / pixelsPerSecond);
+                    const newStartTime = Math.max(0, position.x / pixelsPerSecond);
+                    
+                    // If resizing from left, it means we are trimming the start of the video
+                    let newTrimStart = item.trimStart || 0;
+                    if (direction.includes('left') || direction === 'left') {
+                      const timeDelta = newStartTime - item.startTime;
+                      newTrimStart = Math.max(0, newTrimStart + timeDelta);
+                    }
+
                     updateItem(item.id, {
-                      duration: Math.max(0.5, parseInt(ref.style.width) / pixelsPerSecond),
-                      startTime: Math.max(0, position.x / pixelsPerSecond),
+                      duration: newDuration,
+                      startTime: newStartTime,
+                      trimStart: newTrimStart,
                     });
                   }}
                   enableResizing={{ left: true, right: true }}
@@ -187,7 +252,14 @@ export const Timeline = () => {
             className="absolute top-0 bottom-0 z-20 w-px bg-black pointer-events-none"
             style={{ left: currentTime * pixelsPerSecond }}
           >
-            <div className="absolute -left-[5px] top-0 h-3 w-[11px] bg-black rounded-b-sm" />
+            <div 
+              onMouseDown={(e) => {
+                e.preventDefault();
+                setIsScrubbing(true);
+              }}
+              className="absolute -left-[5px] top-0 h-4 w-[11px] bg-black rounded-b-sm cursor-ew-resize pointer-events-auto hover:bg-gray-800 z-30 transition-colors shadow-sm"
+              title="Drag to scrub"
+            />
           </div>
         </div>
       </div>
