@@ -16,6 +16,8 @@ export interface EditorItem {
   content?: string; // for text items
 }
 
+
+
 interface EditorState {
   items: EditorItem[];
   currentTime: number;
